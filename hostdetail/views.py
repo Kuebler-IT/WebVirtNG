@@ -1,23 +1,20 @@
-from libvirt import libvirtError
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
-from django.shortcuts import render_to_response
-from django.http import HttpResponse, HttpResponseRedirect
-from django.template import RequestContext
-from django.core.urlresolvers import reverse
-import json
-import time
+from django.shortcuts import render, redirect
+from django.http import HttpResponse 
 
 from servers.models import Compute
 from vrtManager.hostdetails import wvmHostDetails
-from webvirtmgr.settings import TIME_JS_REFRESH
+from webvirtng.settings import TIME_JS_REFRESH
+from libvirt import libvirtError
 
+import json
+import time
 
 def hostusage(request, host_id):
-    """
-    Return Memory and CPU Usage
-    """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
 
     points = 5
     datasets = {}
@@ -102,11 +99,8 @@ def hostusage(request, host_id):
 
 
 def overview(request, host_id):
-    """
-    Overview page.
-    """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
 
     errors = []
     time_refresh = TIME_JS_REFRESH
@@ -125,4 +119,4 @@ def overview(request, host_id):
     except libvirtError as err:
         errors.append(err)
 
-    return render_to_response('hostdetail.html', locals(), context_instance=RequestContext(request))
+    return render(request, 'hostdetail.html', locals())
