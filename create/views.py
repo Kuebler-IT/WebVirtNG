@@ -1,8 +1,8 @@
-from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect
-from django.template import RequestContext
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.shortcuts import render, redirect
 from django.utils.translation import ugettext_lazy as _
-from django.core.urlresolvers import reverse
 
 from servers.models import Compute
 from create.models import Flavor
@@ -16,11 +16,8 @@ from create.forms import FlavorAddForm, NewVMForm
 
 
 def create(request, host_id):
-    """
-    Create new instance.
-    """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
 
     conn = None
     errors = []
@@ -63,12 +60,12 @@ def create(request, host_id):
                                            memory=data['memory'],
                                            disk=data['disk'])
                     create_flavor.save()
-                    return HttpResponseRedirect(request.get_full_path())
+                    return redirect(request.get_full_path())
             if 'delete_flavor' in request.POST:
                 flavor_id = request.POST.get('flavor', '')
                 delete_flavor = Flavor.objects.get(id=flavor_id)
                 delete_flavor.delete()
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
             if 'create_xml' in request.POST:
                 xml = request.POST.get('from_xml', '')
                 try:
@@ -81,7 +78,7 @@ def create(request, host_id):
                 else:
                     try:
                         conn._defineXML(xml)
-                        return HttpResponseRedirect(reverse('instance', args=[host_id, name]))
+                        return redirect('instance', args=[host_id, name])
                     except libvirtError as err:
                         errors.append(err.message)
             if 'create' in request.POST:
@@ -133,12 +130,11 @@ def create(request, host_id):
                                                      data['mac'])
                                 create_instance = Instance(compute_id=host_id, name=data['name'], uuid=uuid)
                                 create_instance.save()
-                                return HttpResponseRedirect(reverse('instance', args=[host_id, data['name']]))
+                                return redirect('instance', args=[host_id, data['name']])
                             except libvirtError as err:
                                 if data['hdd_size']:
                                     conn.delete_volume(volumes.keys()[0])
                                 errors.append(err)
-
         conn.close()
 
-    return render_to_response('create.html', locals(), context_instance=RequestContext(request))
+    return render(request, 'create.html', locals())
