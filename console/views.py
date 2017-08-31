@@ -1,23 +1,17 @@
-import re
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
-from django.shortcuts import render_to_response
-from django.template import RequestContext
-from django.http import HttpResponseRedirect
-from django.core.urlresolvers import reverse
+from django.shortcuts import render, redirect
 
 from instance.models import Instance
 from vrtManager.instance import wvmInstance
+from webvirtng.settings import WS_PORT, WS_PUBLIC_HOST
 
-from webvirtmgr.settings import WS_PORT
-from webvirtmgr.settings import WS_PUBLIC_HOST
-
+import re
 
 def console(request):
-    """
-    Console instance block
-    """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
 
     if request.method == 'GET':
         token = request.GET.get('token', '')
@@ -47,11 +41,9 @@ def console(request):
         ws_host = re.sub(':[0-9]+', '', ws_host)
 
     if console_type == 'vnc':
-        response = render_to_response('console-vnc.html', locals(),
-                                      context_instance=RequestContext(request))
+        response = render(request, 'console-vnc.html', locals())
     elif console_type == 'spice':
-        response = render_to_response('console-spice.html', locals(),
-                                      context_instance=RequestContext(request))
+        response = render(request, 'console-spice.html', locals())
     else:
         response = "Console type %s no support" % console_type
 
