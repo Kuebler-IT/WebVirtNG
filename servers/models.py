@@ -1,5 +1,7 @@
-from django.db import models
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
+from django.db import models
 
 class Compute(models.Model):
     name = models.CharField(max_length=20)
@@ -8,5 +10,3 @@ class Compute(models.Model):
     password = models.CharField(max_length=14, blank=True, null=True)
     type = models.IntegerField()
 
-    def __unicode__(self):
-        return self.hostname

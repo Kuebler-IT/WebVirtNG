@@ -1,7 +1,7 @@
-from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect
-from django.template import RequestContext
-from django.core.urlresolvers import reverse
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.shortcuts import render, redirect
 
 from servers.models import Compute
 from instance.models import Instance
@@ -10,30 +10,17 @@ from vrtManager.hostdetails import wvmHostDetails
 from vrtManager.connection import CONN_SSH, CONN_TCP, CONN_TLS, CONN_SOCKET, connection_manager
 from libvirt import libvirtError
 
-
 def index(request):
-    """
-
-    Index page.
-
-    """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
     else:
-        return HttpResponseRedirect(reverse('servers_list'))
-
+        return redirect('servers_list')
 
 def servers_list(request):
-    """
-    Servers page.
-    """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
 
     def get_hosts_status(hosts):
-        """
-        Function return all hosts all vds on host
-        """
         all_hosts = []
         for host in hosts:
             all_hosts.append({'id': host.id,
@@ -59,7 +46,7 @@ def servers_list(request):
             finally:
                 del_host = Compute.objects.get(id=compute_id)
                 del_host.delete()
-            return HttpResponseRedirect(request.get_full_path())
+            return redirect(request.get_full_path())
         if 'host_tcp_add' in request.POST:
             form = ComputeAddTcpForm(request.POST)
             if form.is_valid():
@@ -70,7 +57,7 @@ def servers_list(request):
                                        login=data['login'],
                                        password=data['password'])
                 new_tcp_host.save()
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
         if 'host_ssh_add' in request.POST:
             form = ComputeAddSshForm(request.POST)
             if form.is_valid():
@@ -80,7 +67,7 @@ def servers_list(request):
                                        type=CONN_SSH,
                                        login=data['login'])
                 new_ssh_host.save()
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
         if 'host_tls_add' in request.POST:
             form = ComputeAddTlsForm(request.POST)
             if form.is_valid():
@@ -91,7 +78,7 @@ def servers_list(request):
                                        login=data['login'],
                                        password=data['password'])
                 new_tls_host.save()
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
 
         if 'host_edit' in request.POST:
             form = ComputeEditHostForm(request.POST)
@@ -103,7 +90,7 @@ def servers_list(request):
                 compute_edit.login = data['login']
                 compute_edit.password = data['password']
                 compute_edit.save()
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
 
         if 'host_socket_add' in request.POST:
             form = ComputeAddSocketForm(request.POST)
@@ -115,17 +102,14 @@ def servers_list(request):
                                           login='',
                                           password='')
                 new_socket_host.save()
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
 
-    return render_to_response('servers.html', locals(), context_instance=RequestContext(request))
+    return render(request, 'servers.html', locals())
 
 
 def infrastructure(request):
-    """
-    Infrastructure page.
-    """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
 
     compute = Compute.objects.filter()
     hosts_vms = {}
@@ -145,4 +129,4 @@ def infrastructure(request):
         else:
             hosts_vms[host.id, host.name, 2, 0, 0, 0] = None
 
-    return render_to_response('infrastructure.html', locals(), context_instance=RequestContext(request))
+    return render(request, 'infrastructure.html', locals())
