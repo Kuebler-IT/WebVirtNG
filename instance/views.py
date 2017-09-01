@@ -1,30 +1,25 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.shortcuts import redirect, render
+from django.http import HttpResponse
+from django.utils.translation import ugettext_lazy as _
+
 from string import letters, digits
 from random import choice
 from bisect import insort
+from instance.models import Instance
+from servers.models import Compute
+from vrtManager.instance import wvmInstances, wvmInstance
+from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE
+from webvirtng.settings import TIME_JS_REFRESH, QEMU_KEYMAPS, QEMU_CONSOLE_TYPES
 
-from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect, HttpResponse
-from django.template import RequestContext
-from django.utils.translation import ugettext_lazy as _
-from django.core.urlresolvers import reverse
 import json
 import time
 
-from instance.models import Instance
-from servers.models import Compute
-
-from vrtManager.instance import wvmInstances, wvmInstance
-
-from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE
-from webvirtmgr.settings import TIME_JS_REFRESH, QEMU_KEYMAPS, QEMU_CONSOLE_TYPES
-
-
 def instusage(request, host_id, vname):
-    """
-    Return instance usage
-    """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
 
     cookies = {}
     datasets = {}
@@ -185,11 +180,8 @@ def instusage(request, host_id, vname):
 
 
 def inst_status(request, host_id, vname):
-    """
-    Instance block
-    """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
 
     compute = Compute.objects.get(id=host_id)
 
@@ -205,18 +197,12 @@ def inst_status(request, host_id, vname):
         status = None
 
     data = json.dumps({'status': status})
-    response = HttpResponse()
-    response['Content-Type'] = "text/javascript"
-    response.write(data)
-    return response
+    return HttpResponse(data, 'text/javascript')
 
 
 def insts_status(request, host_id):
-    """
-    Instances block
-    """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
 
     errors = []
     instances = []
@@ -242,18 +228,12 @@ def insts_status(request, host_id):
                           })
 
     data = json.dumps(instances)
-    response = HttpResponse()
-    response['Content-Type'] = "text/javascript"
-    response.write(data)
-    return response
+    return HttpResponse(data, 'text/javascript')
 
 
 def instances(request, host_id):
-    """
-    Instances block
-    """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
 
     errors = []
     instances = []
@@ -292,39 +272,36 @@ def instances(request, host_id):
                 name = request.POST.get('name', '')
                 if 'start' in request.POST:
                     conn.start(name)
-                    return HttpResponseRedirect(request.get_full_path())
+                    return redirect(request.get_full_path())
                 if 'shutdown' in request.POST:
                     conn.shutdown(name)
-                    return HttpResponseRedirect(request.get_full_path())
+                    return redirect(request.get_full_path())
                 if 'destroy' in request.POST:
                     conn.force_shutdown(name)
-                    return HttpResponseRedirect(request.get_full_path())
+                    return redirect(request.get_full_path())
                 if 'managedsave' in request.POST:
                     conn.managedsave(name)
-                    return HttpResponseRedirect(request.get_full_path())
+                    return redirect(request.get_full_path())
                 if 'deletesaveimage' in request.POST:
                     conn.managed_save_remove(name)
-                    return HttpResponseRedirect(request.get_full_path())
+                    return redirect(request.get_full_path())
                 if 'suspend' in request.POST:
                     conn.suspend(name)
-                    return HttpResponseRedirect(request.get_full_path())
+                    return redirect(request.get_full_path())
                 if 'resume' in request.POST:
                     conn.resume(name)
-                    return HttpResponseRedirect(request.get_full_path())
+                    return redirect(request.get_full_path())
 
             conn.close()
         except libvirtError as err:
             errors.append(err)
 
-    return render_to_response('instances.html', locals(), context_instance=RequestContext(request))
+    return render(request, 'instances.html', locals())
 
 
 def instance(request, host_id, vname):
-    """
-    Instance block
-    """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
 
     def show_clone_disk(disks):
         clone_disk = []
@@ -398,26 +375,26 @@ def instance(request, host_id, vname):
         if request.method == 'POST':
             if 'start' in request.POST:
                 conn.start()
-                return HttpResponseRedirect(request.get_full_path() + '#shutdown')
+                return redirect(request.get_full_path() + '#shutdown')
             if 'power' in request.POST:
                 if 'shutdown' == request.POST.get('power', ''):
                     conn.shutdown()
-                    return HttpResponseRedirect(request.get_full_path() + '#shutdown')
+                    return redirect(request.get_full_path() + '#shutdown')
                 if 'destroy' == request.POST.get('power', ''):
                     conn.force_shutdown()
-                    return HttpResponseRedirect(request.get_full_path() + '#forceshutdown')
+                    return redirect(request.get_full_path() + '#forceshutdown')
                 if 'managedsave' == request.POST.get('power', ''):
                     conn.managedsave()
-                    return HttpResponseRedirect(request.get_full_path() + '#managedsave')
+                    return redirect(request.get_full_path() + '#managedsave')
             if 'deletesaveimage' in request.POST:
                 conn.managed_save_remove()
-                return HttpResponseRedirect(request.get_full_path() + '#managedsave')
+                return redirect(request.get_full_path() + '#managedsave')
             if 'suspend' in request.POST:
                 conn.suspend()
-                return HttpResponseRedirect(request.get_full_path() + '#suspend')
+                return redirect(request.get_full_path() + '#suspend')
             if 'resume' in request.POST:
                 conn.resume()
-                return HttpResponseRedirect(request.get_full_path() + '#suspend')
+                return redirect(request.get_full_path() + '#suspend')
             if 'delete' in request.POST:
                 if conn.get_status() == 1:
                     conn.force_shutdown()
@@ -428,27 +405,27 @@ def instance(request, host_id, vname):
                         conn.delete_disk()
                 finally:
                     conn.delete()
-                return HttpResponseRedirect(reverse('instances', args=[host_id]))
+                return redirect(reverse('instances', args=[host_id]))
             if 'snapshot' in request.POST:
                 name = request.POST.get('name', '')
                 conn.create_snapshot(name)
-                return HttpResponseRedirect(request.get_full_path() + '#istaceshapshosts')
+                return redirect(request.get_full_path() + '#istaceshapshosts')
             if 'umount_iso' in request.POST:
                 image = request.POST.get('path', '')
                 dev = request.POST.get('umount_iso', '')
                 conn.umount_iso(dev, image)
-                return HttpResponseRedirect(request.get_full_path() + '#instancemedia')
+                return redirect(request.get_full_path() + '#instancemedia')
             if 'mount_iso' in request.POST:
                 image = request.POST.get('media', '')
                 dev = request.POST.get('mount_iso', '')
                 conn.mount_iso(dev, image)
-                return HttpResponseRedirect(request.get_full_path() + '#instancemedia')
+                return redirect(request.get_full_path() + '#instancemedia')
             if 'set_autostart' in request.POST:
                 conn.set_autostart(1)
-                return HttpResponseRedirect(request.get_full_path() + '#instancesettings')
+                return redirect(request.get_full_path() + '#instancesettings')
             if 'unset_autostart' in request.POST:
                 conn.set_autostart(0)
-                return HttpResponseRedirect(request.get_full_path() + '#instancesettings')
+                return redirect(request.get_full_path() + '#instancesettings')
             if 'change_settings' in request.POST:
                 description = request.POST.get('description', '')
                 vcpu = request.POST.get('vcpu', '')
@@ -462,12 +439,12 @@ def instance(request, host_id, vname):
                 if cur_memory_custom:
                     cur_memory = cur_memory_custom
                 conn.change_settings(description, cur_memory, memory, cur_vcpu, vcpu)
-                return HttpResponseRedirect(request.get_full_path() + '#instancesettings')
+                return redirect(request.get_full_path() + '#instancesettings')
             if 'change_xml' in request.POST:
                 xml = request.POST.get('inst_xml', '')
                 if xml:
                     conn._defineXML(xml)
-                    return HttpResponseRedirect(request.get_full_path() + '#instancexml')
+                    return redirect(request.get_full_path() + '#instancexml')
             if 'set_console_passwd' in request.POST:
                 if request.POST.get('auto_pass', ''):
                     passwd = ''.join([choice(letters + digits) for i in xrange(12)])
@@ -484,7 +461,7 @@ def instance(request, host_id, vname):
                         msg = _("Error setting console password. You should check that your instance have an graphic device.")
                         errors.append(msg)
                     else:
-                        return HttpResponseRedirect(request.get_full_path() + '#console_pass')
+                        return redirect(request.get_full_path() + '#console_pass')
 
             if 'set_console_keymap' in request.POST:
                 keymap = request.POST.get('console_keymap', '')
@@ -493,12 +470,12 @@ def instance(request, host_id, vname):
                     conn.set_console_keymap('')
                 else:
                     conn.set_console_keymap(keymap)
-                return HttpResponseRedirect(request.get_full_path() + '#console_keymap')
+                return redirect(request.get_full_path() + '#console_keymap')
 
             if 'set_console_type' in request.POST:
                 console_type = request.POST.get('console_type', '')
                 conn.set_console_type(console_type)
-                return HttpResponseRedirect(request.get_full_path() + '#console_type')
+                return redirect(request.get_full_path() + '#console_type')
 
             if 'migrate' in request.POST:
                 compute_id = request.POST.get('compute_id', '')
@@ -513,11 +490,11 @@ def instance(request, host_id, vname):
                 conn_migrate.moveto(conn, vname, live, unsafe, xml_del)
                 conn_migrate.define_move(vname)
                 conn_migrate.close()
-                return HttpResponseRedirect(reverse('instance', args=[compute_id, vname]))
+                return redirect(reverse('instance', args=[compute_id, vname]))
             if 'delete_snapshot' in request.POST:
                 snap_name = request.POST.get('name', '')
                 conn.snapshot_delete(snap_name)
-                return HttpResponseRedirect(request.get_full_path() + '#istaceshapshosts')
+                return redirect(request.get_full_path() + '#istaceshapshosts')
             if 'revert_snapshot' in request.POST:
                 snap_name = request.POST.get('name', '')
                 conn.snapshot_revert(snap_name)
@@ -533,11 +510,11 @@ def instance(request, host_id, vname):
                         clone_data[post] = request.POST.get(post, '')
 
                 conn.clone_instance(clone_data)
-                return HttpResponseRedirect(reverse('instance', args=[host_id, clone_data['name']]))
+                return redirect(reverse('instance', args=[host_id, clone_data['name']]))
 
         conn.close()
 
     except libvirtError as err:
         errors.append(err)
 
-    return render_to_response('instance.html', locals(), context_instance=RequestContext(request))
+    return render(request, 'instance.html', locals())
