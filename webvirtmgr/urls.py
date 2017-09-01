@@ -1,5 +1,5 @@
-from django.conf.urls import patterns, url
-from django.conf import settings
+from django.conf.urls import url
+from django.contrib.auth import views as auth_views
 
 from servers import views as servers_views
 from hostdetail import views as hostdetail_views
@@ -13,8 +13,8 @@ from console import views as console_views
 
 urlpatterns = [
     url(r'^$', servers_views.index, name='index'),
-    url(r'^login/$', django.contrib.auth.views.login, {'template_name': 'login.html'}, name='login'),
-    url(r'^logout/$', django.contrib.auth.views.logout, {'template_name': 'logout.html'}, name='logout'),
+    url(r'^login/$', auth_views.login, {'template_name': 'login.html'}, name='login'),
+    url(r'^logout/$', auth_views.logout, {'template_name': 'logout.html'}, name='logout'),
     url(r'^servers/$', servers_views.servers_list, name='servers_list'),
     url(r'^infrastructure/$', servers_views.infrastructure, name='infrastructure'),
     url(r'^host/(\d+)/$', hostdetail_views.overview, name='overview'),
@@ -33,6 +33,5 @@ urlpatterns = [
     url(r'^info/insts_status/(\d+)/$', instance_views.insts_status, name='insts_status'),
     url(r'^info/inst_status/(\d+)/([\w\-\.]+)/$', instance_views.inst_status, name='inst_status'),
     url(r'^info/instusage/(\d+)/([\w\-\.]+)/$', instance_views.instusage, name='instusage'),
-    url(r'^static/(?P<path>.*)$', django.views.static.serve, {'document_root': settings.STATIC_ROOT}),
 ]
 
