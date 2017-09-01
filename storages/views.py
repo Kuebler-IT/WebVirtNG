@@ -1,14 +1,12 @@
-from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect
-from django.template import RequestContext
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.shortcuts import render, redirect
 from django.utils.translation import ugettext_lazy as _
-from django.core.urlresolvers import reverse
 
 from servers.models import Compute
 from storages.forms import AddStgPool, AddImage, CloneImage
-
 from vrtManager.storage import wvmStorage, wvmStorages
-
 from libvirt import libvirtError
 
 
@@ -17,7 +15,7 @@ def storages(request, host_id):
     Storage pool block
     """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
 
     errors = []
     compute = Compute.objects.get(id=host_id)
@@ -56,12 +54,12 @@ def storages(request, host_id):
                                                       data['source_format'], data['target'])
                         else:
                             conn.create_storage(data['stg_type'], data['name'], data['source'], data['target'])
-                        return HttpResponseRedirect(reverse('storage', args=[host_id, data['name']]))
+                        return redirect('storage', args=[host_id, data['name']])
         conn.close()
     except libvirtError as err:
         errors.append(err)
 
-    return render_to_response('storages.html', locals(), context_instance=RequestContext(request))
+    return render(request, 'storages.html', locals())
 
 
 def storage(request, host_id, pool):
@@ -69,7 +67,7 @@ def storage(request, host_id, pool):
     Storage pool block
     """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
 
     def handle_uploaded_file(path, f_name):
         target = path + '/' + str(f_name)
@@ -114,31 +112,31 @@ def storage(request, host_id, pool):
         if 'start' in request.POST:
             try:
                 conn.start()
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
             except libvirtError as error_msg:
                 errors.append(error_msg.message)
         if 'stop' in request.POST:
             try:
                 conn.stop()
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
             except libvirtError as error_msg:
                 errors.append(error_msg.message)
         if 'delete' in request.POST:
             try:
                 conn.delete()
-                return HttpResponseRedirect(reverse('storages', args=[host_id]))
+                return redirect('storages', args=[host_id])
             except libvirtError as error_msg:
                 errors.append(error_msg.message)
         if 'set_autostart' in request.POST:
             try:
                 conn.set_autostart(1)
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
             except libvirtError as error_msg:
                 errors.append(error_msg.message)
         if 'unset_autostart' in request.POST:
             try:
                 conn.set_autostart(0)
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
             except libvirtError as error_msg:
                 errors.append(error_msg.message)
         if 'add_volume' in request.POST:
@@ -149,7 +147,7 @@ def storage(request, host_id, pool):
                     meta_prealloc = True
                 try:
                     conn.create_volume(data['name'], data['size'], data['format'], meta_prealloc)
-                    return HttpResponseRedirect(request.get_full_path())
+                    return redirect(request.get_full_path())
                 except libvirtError as err:
                     errors.append(err)
         if 'del_volume' in request.POST:
@@ -157,7 +155,7 @@ def storage(request, host_id, pool):
             try:
                 vol = conn.get_volume(volname)
                 vol.delete(0)
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
             except libvirtError as error_msg:
                 errors.append(error_msg.message)
         if 'iso_upload' in request.POST:
@@ -166,7 +164,7 @@ def storage(request, host_id, pool):
                 errors.append(msg)
             else:
                 handle_uploaded_file(path, request.FILES['file'])
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
         if 'cln_volume' in request.POST:
             form = CloneImage(request.POST)
             if form.is_valid():
@@ -185,9 +183,9 @@ def storage(request, host_id, pool):
                         format = None
                     try:
                         conn.clone_volume(data['image'], data['name'], format, meta_prealloc)
-                        return HttpResponseRedirect(request.get_full_path())
+                        return redirect(request.get_full_path())
                     except libvirtError as err:
                         errors.append(err)
     conn.close()
 
-    return render_to_response('storage.html', locals(), context_instance=RequestContext(request))
+    return render(request, 'storage.html', locals())
