@@ -1,0 +1,49 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="WebVirtNG - Open Source WebUI for Libvirt">
+    <meta name="author" content="Benjamin Kuebler">
+    <meta name="keyword" content="WebVirtNG,VirtualMachinManager,WebUI Libvirt">
+    <link rel="shortcut icon" href="{% static "img/favicon.png" %}">
+    <title>{% block title %}{% endblock %}</title>
+
+    <!-- Icons -->
+    <link href="{% static "css/font-awesome.min.css" %}" rel="stylesheet">
+    <link href="{% static "css/simple-line-icons.css" %}" rel="stylesheet">
+
+    <!-- Main styles for this application -->
+    <link href="{% static "css/style.css" %}" rel="stylesheet">
+    <link href="{% static "css/login.css" %}" rel="stylesheet">
+</head>
+
+<body class="app header-fixed sidebar-fixed aside-menu-fixed aside-menu-hidden">
+
+    {% block content %}{% endblock %}
+
+    <!-- Bootstrap and necessary plugins -->
+    <script src="{% static "bower_components/jquery/dist/jquery.min.js" %}"></script>
+    <script src="{% static "bower_components/popper.js/index.js" %}"></script>
+    <script src="{% static "bower_components/bootstrap/dist/js/bootstrap.min.js" %}"></script>
+    <script src="{% static "bower_components/pace/pace.min.js" %}"></script>
+
+    <!-- Plugins and scripts required by all views -->
+    <script src="{% static "bower_components/chart.js/dist/Chart.min.js" %}"></script>
+
+    <!-- GenesisUI main scripts -->
+
+    <script src="{% static "js/app.js" %}"></script>
+
+    <!-- Plugins and scripts required by this views -->
+
+    <!-- Custom scripts required by this view -->
+    <script src="{% static "js/views/main.js" %}"></script>
+    <script src="{% static "js/views/login.js" %}"></script>
+</body>
+
+</html>
