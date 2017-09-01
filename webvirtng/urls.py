@@ -23,13 +23,16 @@ from hostdetail import views as hostdetail_views
 from create import views as create_views
 from storages import views as storages_views
 from networks import views as networks_views
+from infrastructure import views as infrastructure_views
 from interfaces import views as interfaces_views
 from instance import views as instance_views
 from secrets import views as secrets_views
 from console import views as console_views
 
+
 urlpatterns = [
     url(r'^$', servers_views.index, name='index'),
+    #url(r'^$', dashboard_views.dashboard, name='dashboard'),
     url(r'^admin/', admin.site.urls),
     url(r'^console/$', console_views.console, name='console'),
     url(r'^create/(\d+)/$', create_views.create, name='create'),
@@ -37,8 +40,9 @@ urlpatterns = [
     url(r'^login/$', auth_views.login, {'template_name': 'login.html'}, name='login'),
     url(r'^logout/$', auth_views.logout, {'template_name': 'logout.html'}, name='logout'),
     url(r'^servers/$', servers_views.servers_list, name='servers_list'),
-    #url(r'^infrastructure/', include('infrastructure.urls')),
     url(r'^infrastructure/$', servers_views.infrastructure, name='infrastructure'),
+    url(r'^infrastructure/nodes/', infrastructure_views.nodes, name='infrastructure-nodes'),
+    url(r'^infrastructure/vms/', infrastructure_views.vms, name='infrastructure-vms'),
     url(r'^host/(\d+)/$', hostdetail_views.overview, name='overview'),
     url(r'^storages/(\d+)/$', storages_views.storages, name='storages'),
     url(r'^storage/(\d+)/([\w\-\.]+)/$', storages_views.storage, name='storage'),
@@ -54,4 +58,3 @@ urlpatterns = [
     url(r'^info/inst_status/(\d+)/([\w\-\.]+)/$', instance_views.inst_status, name='inst_status'),
     url(r'^info/instusage/(\d+)/([\w\-\.]+)/$', instance_views.instusage, name='instusage'),
 ]
-
