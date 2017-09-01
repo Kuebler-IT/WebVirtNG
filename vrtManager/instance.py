@@ -13,7 +13,7 @@ from xml.etree import ElementTree
 from datetime import datetime
 from vrtManager.connection import wvmConnect
 
-from webvirtmgr.settings import QEMU_CONSOLE_TYPES
+from webvirtng.settings import QEMU_CONSOLE_TYPES
 
 
 class wvmInstances(wvmConnect):
