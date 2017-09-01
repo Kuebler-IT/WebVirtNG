@@ -1,23 +1,16 @@
-from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect
-from django.template import RequestContext
-from django.core.urlresolvers import reverse
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.shortcuts import render, redirect
 
 from servers.models import Compute
 from interfaces.forms import AddInterface
-
 from vrtManager.interface import wvmInterface, wvmInterfaces
-
 from libvirt import libvirtError
 
-
 def interfaces(request, host_id):
-    """
-    Interfaces block
-
-    """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('index'))
+        return redirect('index')
 
     errors = []
     ifaces_all = []
@@ -46,12 +39,12 @@ def interfaces(request, host_id):
                                       data['ipv4_type'], data['ipv4_addr'], data['ipv4_gw'],
                                       data['ipv6_type'], data['ipv6_addr'], data['ipv6_gw'],
                                       data['stp'], data['delay'])
-                    return HttpResponseRedirect(request.get_full_path())
+                    return redirect(request.get_full_path())
         conn.close()
     except libvirtError as err:
         errors.append(err)
 
-    return render_to_response('interfaces.html', locals(), context_instance=RequestContext(request))
+    return render(request, 'interfaces.html', locals())
 
 
 def interface(request, host_id, iface):
@@ -60,7 +53,7 @@ def interface(request, host_id, iface):
 
     """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('index'))
+        return redirect('index')
 
     errors = []
     ifaces_all = []
@@ -85,15 +78,15 @@ def interface(request, host_id, iface):
         if request.method == 'POST':
             if 'stop' in request.POST:
                 conn.stop_iface()
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
             if 'start' in request.POST:
                 conn.start_iface()
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
             if 'delete' in request.POST:
                 conn.delete_iface()
-                return HttpResponseRedirect(reverse('interfaces', args=[host_id]))
+                return redirect('interfaces', args=[host_id])
         conn.close()
     except libvirtError as err:
         errors.append(err)
 
-    return render_to_response('interface.html', locals(), context_instance=RequestContext(request))
+    return render(request, 'interface.html', locals())
