@@ -1,24 +1,21 @@
-from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect
-from django.template import RequestContext
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.shortcuts import render, redirect
 from django.utils.translation import ugettext_lazy as _
-from django.core.urlresolvers import reverse
 
 from servers.models import Compute
 from networks.forms import AddNetPool
-
 from vrtManager.network import wvmNetwork, wvmNetworks
 from vrtManager.network import network_size
-
 from libvirt import libvirtError
-
 
 def networks(request, host_id):
     """
     Networks block
     """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
 
     errors = []
     compute = Compute.objects.get(id=host_id)
@@ -48,12 +45,12 @@ def networks(request, host_id):
                     if not errors:
                         conn.create_network(data['name'], data['forward'], gateway, netmask,
                                             dhcp, data['bridge_name'], data['openvswitch'], data['fixed'])
-                        return HttpResponseRedirect(reverse('network', args=[host_id, data['name']]))
+                        return redirect('network', args=[host_id, data['name']])
         conn.close()
     except libvirtError as err:
         errors.append(err)
 
-    return render_to_response('networks.html', locals(), context_instance=RequestContext(request))
+    return render(request, 'networks.html', locals())
 
 
 def network(request, host_id, pool):
@@ -61,7 +58,7 @@ def network(request, host_id, pool):
     Networks block
     """
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('login'))
+        return redirect('login')
 
     errors = []
     compute = Compute.objects.get(id=host_id)
@@ -88,34 +85,34 @@ def network(request, host_id, pool):
         if 'start' in request.POST:
             try:
                 conn.start()
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
             except libvirtError as error_msg:
                 errors.append(error_msg.message)
         if 'stop' in request.POST:
             try:
                 conn.stop()
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
             except libvirtError as error_msg:
                 errors.append(error_msg.message)
         if 'delete' in request.POST:
             try:
                 conn.delete()
-                return HttpResponseRedirect(reverse('networks', args=[host_id]))
+                return redirect('networks', args=[host_id])
             except libvirtError as error_msg:
                 errors.append(error_msg.message)
         if 'set_autostart' in request.POST:
             try:
                 conn.set_autostart(1)
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
             except libvirtError as error_msg:
                 errors.append(error_msg.message)
         if 'unset_autostart' in request.POST:
             try:
                 conn.set_autostart(0)
-                return HttpResponseRedirect(request.get_full_path())
+                return redirect(request.get_full_path())
             except libvirtError as error_msg:
                 errors.append(error_msg.message)
 
     conn.close()
 
-    return render_to_response('network.html', locals(), context_instance=RequestContext(request))
+    return render(request, 'network.html', locals())
