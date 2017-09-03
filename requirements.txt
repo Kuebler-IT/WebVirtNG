@@ -1,5 +1,5 @@
 libvirt-python>=1.2.9
 Django==1.11.4
 gunicorn==18.0
-lockfile>=0.9
+lockfile>=0.12.2
 #django-auth-ldap==1.2.0
