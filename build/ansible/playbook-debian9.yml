@@ -1,0 +1,27 @@
+---
+- name: install and run webvirtng
+  hosts: deb9
+  remote_user: root
+  tasks:
+  - name: install libvirt and dependencies
+    apt:
+      name: kvm,libvirt-bin,bridge-utils,sasl2-bin
+      state: latest
+  - name: install python-pip
+    apt:
+      name: python-pip
+      state: present
+  - name: install python-dev
+    apt:
+      name: python-dev
+      state: present
+  - name: install python-libvirt
+    apt:
+      name: python-libvirt
+      state: present
+  - name: install python-libxml2
+    apt:
+      name: python-libxml2
+      state: present
+  - pip:
+      requirements: /vagrant/dev-requirements.txt

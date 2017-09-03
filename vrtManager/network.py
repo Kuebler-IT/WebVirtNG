@@ -2,7 +2,7 @@
 # Copyright (C) 2013 Webvirtmgr.
 #
 from vrtManager import util
-from vrtManager.IPy import IP
+from IPy import IP
 from vrtManager.connection import wvmConnect
 
 
@@ -28,7 +28,8 @@ class wvmNetworks(wvmConnect):
             net = self.get_network(network)
             net_status = net.isActive()
             net_bridge = net.bridgeName()
-            net_forwd = util.get_xml_path(net.XMLDesc(0), "/network/forward/@mode")
+            net_forwd = util.get_xml_path(
+                net.XMLDesc(0), "/network/forward/@mode")
             networks.append({'name': network, 'status': net_status,
                              'device': net_bridge, 'forward': net_forwd})
         return networks
@@ -60,7 +61,8 @@ class wvmNetworks(wvmConnect):
                     fist_oct = int(dhcp[0].strip().split('.')[3])
                     last_oct = int(dhcp[1].strip().split('.')[3])
                     for ip in range(fist_oct, last_oct + 1):
-                        xml += """<host mac='%s' ip='%s.%s' />""" % (util.randomMAC(), gateway[:-2], ip)
+                        xml += """<host mac='%s' ip='%s.%s' />""" % (
+                            util.randomMAC(), gateway[:-2], ip)
                 xml += """</dhcp>"""
 
             xml += """</ip>"""

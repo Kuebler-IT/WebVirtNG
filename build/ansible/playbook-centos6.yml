@@ -1,0 +1,19 @@
+---
+- name: install CentOS 6 production grade environment for development
+  hosts: centos6
+
+  tasks:
+  - name: install libvirt and dependencies
+    yum:
+      name: qemu-kvm,libvirt,bridge-utils
+      state: present
+  - name: install python dependencies
+    yum:
+      name: python-pip,libvirt-python,libxml2-python,python-websockify
+      state: present
+  - name: install supervisor and nginx
+    yum:
+      name: supervisor,nginx
+      state: present
+  - pip:
+      requirements: /vagrant/requirements.txt

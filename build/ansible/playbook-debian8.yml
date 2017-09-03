@@ -1,0 +1,65 @@
+---
+- name: install Debian 8 production grade environment for development
+  hosts: debian8
+
+  tasks:
+  - name: update apt cache
+    apt:
+      update_cache: yes
+  - name: install libvirt and dependencies
+    apt:
+      name: kvm,libvirt-bin,bridge-utils,sasl2-bin
+      state: present
+  - name: install python dependencies
+    apt:
+      name: python-pip,python-libvirt,python-libxml2
+      state: present
+  - name: install novnc,supervisor and nginx
+    apt:
+      name: novnc,supervisor,nginx
+      state: present
+  - name: install python modules
+    pip:
+      requirements: /vagrant/requirements.txt
+  - name: configure nginx for serve application
+    template:
+      src: templates/nginx.default.j2
+      dest: /etc/nginx/sites-available/default
+      owner: root
+      group: root
+      mode: 0644
+  - name: restart nginx
+    service:
+      name: nginx
+      state: restarted
+  - name: make migrations for objects
+    shell: |
+      cd /vagrant
+      ./manage.py makemigrations
+      ./manage.py migrate
+      exit 0
+  - name: generate superuser for testing instance
+    shell: |
+      cd /vagrant
+      echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'admin@example.com', 'password')" | python manage.py shell
+      exit 0
+  - name: install systemd config for gunicorn.service
+    template:
+      src: templates/gunicorn-systemd.service.j2
+      dest: /etc/systemd/system/gunicorn.service
+      owner: root
+      group: root
+      mode: 0644
+  - name: install tmpfiles config
+    template:
+      src: templates/gunicorn-tmpfile.conf.j2
+      dest: /etc/tmpfiles.d/gunicorn.conf
+      owner: root
+      group: root
+      mode: 0644
+  - name: enable gunicorn service in systemd
+    command: systemctl enable gunicorn.service
+  - name: start gunicorn service
+    command: systemctl start gunicorn
+  - name: set correct user and group attributes
+    command: chown -Rf vagrant:vagrant /vagrant

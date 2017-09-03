@@ -1,0 +1,25 @@
+---
+- name: install CentOS 7 production grade environment for development
+  hosts: centos7
+
+  tasks:
+  - name: install libvirt and dependencies
+    yum:
+      name: qemu-kvm,libvirt,bridge-utils
+      state: present
+  - name: install python dependencies
+    yum:
+      name: python-pip,libvirt-python,libxml2-python,python-websockify
+      state: present
+  - name: install supervisor and nginx
+    yum:
+      name: supervisor,nginx
+      state: present
+  - name: install gcc and python-devel for numpy
+    yum:
+      name: gcc,python-devel
+      state: present
+  - pip:
+      name: numpy
+  - pip:
+      requirements: /vagrant/requirements.txt

@@ -9,6 +9,7 @@ from webvirtng.settings import WS_PORT, WS_PUBLIC_HOST
 
 import re
 
+
 def console(request):
     if not request.user.is_authenticated():
         return redirect('login')

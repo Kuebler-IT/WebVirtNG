@@ -21,11 +21,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = secret_key.generate_or_read_from_file(os.path.join(BASE_DIR, '.secret_key'))
+SECRET_KEY = secret_key.generate_or_read_from_file(
+    os.path.join(BASE_DIR, '.secret_key'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 
 ALLOWED_HOSTS = []
 
@@ -65,6 +65,7 @@ TEMPLATES = [
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
+            'debug': DEBUG,
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
@@ -127,7 +128,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-  os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'static'),
 ]
 
 
@@ -157,7 +158,7 @@ WS_KEY = None
 # we will never close the connection no matter what these parameters are set
 # to, as long as the libvirt.d is up and running at the server side.
 LIBVIRT_KEEPALIVE_INTERVAL = 5
-LIBVIRT_KEEPALIVE_COUNT    = 5
+LIBVIRT_KEEPALIVE_COUNT = 5
 
 # list taken from http://qemu.weilnetz.de/qemu-doc.html#sec_005finvocation
 QEMU_KEYMAPS = ['ar', 'da', 'de', 'de-ch', 'en-gb', 'en-us', 'es', 'et', 'fi',
@@ -170,4 +171,3 @@ QEMU_CONSOLE_TYPES = ['vnc', 'spice']
 
 # default console type
 QEMU_CONSOLE_DEFAULT_TYPE = 'vnc'
-
