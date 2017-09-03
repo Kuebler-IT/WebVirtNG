@@ -17,11 +17,13 @@ Vagrant.configure('2') do |config|
       # boxtype is operating system see boxes hash.
       node.vm.box = boxtype.to_s
       # provisioning over ansible playbook
-      node.vm.provision 'ansible_local' do |ansible|
+      node.vm.provision 'ansible' do |ansible|
         ansible.sudo = true
         ansible.verbose = true
         ansible.playbook = "build/ansible/playbook-#{name}.yml"
       end
+      # forward port for web
+      node.vm.network 'forwarded_port', guest: 80, host: 8080, auto_correct: true
     end
   end
 
