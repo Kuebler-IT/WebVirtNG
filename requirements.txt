@@ -1,7 +1,5 @@
-django==1.5.5
+libvirt-python>=1.2.9
+Django==1.11.4
 gunicorn==18.0
-# Utility Requirements
-# for SECURE_KEY generation
 lockfile>=0.9
-# Uncoment for support ldap
 #django-auth-ldap==1.2.0
